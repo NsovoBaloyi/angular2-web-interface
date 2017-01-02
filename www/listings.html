@@ -1,0 +1,474 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name = "viewport" content = "user-scalable=no, maximum-scale=1.0, width=device-width" />
+
+<title>Main</title>
+<link href="https://fonts.googleapis.com/css?family=Lora|Open+Sans" rel="stylesheet">
+<link href="styles.css" rel="stylesheet" type="text/css"> 
+<script src="jquery.min.js" type="text/javascript"></script>
+<script  src="script.js" type="text/javascript"></script>
+<script  src="js/react.js" type="text/javascript"></script>
+<script  src="js/react-dom.js" type="text/javascript"></script>
+<script  src="js/browser.min.js" type="text/javascript"></script>
+<script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+
+</head>
+
+<body class="main">
+
+<!-- THIS IS THE MARKUP FOR THE SLIDING PANEL MENU -->
+	<div class="side-panel">
+    	<div class="panel-profile-info"> 
+        	<div class="B-prof-pic"> </div>
+            <div class="prof-inf"> 
+            	<h3> User X </h3>
+                <p style="text-transform:none"> Your profile </p>
+            </div>
+        </div>
+        <ul class="panel-list"> 
+        	<li> <div class="li-img" id="li-i1"> </div> <a>Payments</a> </li>
+        	<li> <div class="li-img" id="li-i2"> </div> <a>Work History</a> </li>
+        	<li> <div class="li-img" id="li-i3"> </div> <a>Support</a> </li>
+        	<li> <div class="li-img" id="li-i4"> </div> <a>About</a> </li>
+        </ul>
+    </div>
+    <div class="dark-overlay"> </div>
+<!-- END MARKUP FOR THE SLIDING PANEL MENU -->
+
+<!-- MARKUP FOR THE FLEXIBLE HEADER -->    
+	<div class="header-container">
+        <div class="header">
+            <div class="left-tab">
+                <div class="imglogo"> </div> 
+            </div>
+            
+            <div class="right-tab">
+                <a id="cta"> POST JOB </a>
+            </div>
+        </div>
+        
+        <div class="info-bar"> 
+            <div class="menu"> </div>
+            <div class="infobar-text"> Live jobs around you </div>
+            <a id="cta2" class="apply"> Bid </a>
+        </div>
+    </div>
+<!-- END MARKUP FOR THE FLEXIBLE HEADER --> 
+
+<!-- SECTION 1: Job listings --> 		 
+    <section class="screenA-main">
+    	<div class="job-container" id="react-job-container">
+       
+        	<!--<ul class="jobs">-->
+				<script type="text/babel">
+					var JobList = React.createClass({
+						
+						getInitialState() {
+							return {
+								jobs: [
+									{jobType: 'Wash Car', wage: 'R50', time: 'due: 45 minutes', dist: '0.2km away'},
+									{jobType: 'Clean Room', wage: 'R100', time: 'due: 3 hours', dist: '1.1km away'},
+									{jobType: 'Laundry', wage: 'R50', time: 'due: 20 minutes', dist: '2km away'}
+								]	
+							}
+						},
+						render() {
+							return (<ul className="jobs">
+								{this.state.jobs.map((job,i) => {
+									return <JobItem key={i} time={job.time} dist={job.dist} wage={job.wage}>{job.jobType}</JobItem>
+								})}
+									</ul>)
+						}
+					})
+					var JobItem = React.createClass({
+						getInitialState() {
+							return {viewing: false}	
+						},
+						view() {
+							slide($('.screenA-main'),$('.screenC-main'),'Viewing Job... ')
+							$('a#cta2.apply').css('display','inline-block');
+							currentSlide = 1;
+							this.setState({viewing:true})	
+						},
+						remove() {
+							alert("removing job")
+						},
+						render() {
+                            return <li onClick = {this.view}>
+                                <div className="left-deets">
+                                  <h3> {this.props.wage}</h3>
+                                  <p className="dist"> {this.props.time}</p>
+                                </div>
+                                
+                                <div className="right-deets">
+                                    <h1> {this.props.children} </h1>
+                                    <p> {this.props.dist} </p>
+                                    <div className="author">
+                                      
+                                        <div className="rating">
+                                            <span className="starred"> </span>
+                                            <span className="starred"> </span>
+                                            <span className="starred"> </span>
+                                            <span className="starred"> </span>
+                                            <span> </span>
+                                        </div>
+                                    </div>
+                                </div>	
+                            </li>	
+                        }
+					})
+                   
+                    ReactDOM.render(<JobList count={4}/>,
+                    document.getElementById('react-job-container'));
+                </script>   	  
+           <!-- </ul>-->
+            
+            <a style="font-size:3rem; margin-top: 5%;" href="description.html"> Change location </a>
+        </div>
+    </section>
+<!-- END SECTION 1 -->    
+
+<!-- SECTION 2: Job location change --> 
+    <section class="screenB-main">
+    	<div class="map-container">
+        <div id="map"> </div>
+        
+		<script>
+            var geocoder;
+            var map;
+			var mapdir;
+			var markerArray = [];
+			var directionsService
+        	var directionsDisplay;
+			var stepDisplay;
+          function initMap() {
+            // Styles a map in night mode.
+            var input = document.getElementById('text-address');
+            var options = {
+              componentRestrictions: {country: 'za'},
+              types: ['(regions)']
+            };
+            directionsService = new google.maps.DirectionsService; 
+            autocomplete = new google.maps.places.Autocomplete(input, options);
+            geocoder = new google.maps.Geocoder;
+            map = new google.maps.Map(document.getElementById('map'), {
+              center: {lat:-33.952254, lng: 18.47},
+              zoom: 17,
+              zoomControl: true,
+              gestureHandling: 'greedy',
+              mapTypeControl: false,
+              scaleControl: true,
+              streetViewControl: false,
+              rotateControl: false,
+              fullscreenControl: false,
+              styles: [
+                {elementType: 'geometry', stylers: [{color: '#f1f2f4'}]},
+                {elementType: 'labels.text.stroke', stylers: [{color: '#ffffff'}]},
+                {elementType: 'labels.text.fill', stylers: [{color: '#191919'}]},
+                {
+                  featureType: 'administrative.locality',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#d59563'}]
+                },
+                {
+                  featureType: 'poi',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#d59563'}]
+                },
+                {
+                  featureType: 'poi.park',
+                  elementType: 'geometry',
+                  stylers: [{color: '#cff6b7'}]
+                },
+                {
+                  featureType: 'poi.park',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#6b9a76'}]
+                },
+                {
+                  featureType: 'road',
+                  elementType: 'geometry',
+                  stylers: [{color: '#ffffff'}]
+                },
+                {
+                  featureType: 'road',
+                  elementType: 'geometry.stroke',
+                  stylers: [{color: '#ffffff'}]
+                },
+                {
+                  featureType: 'road',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#9ca5b3'}]
+                },
+                {
+                  featureType: 'road.highway',
+                  elementType: 'geometry',
+                  stylers: [{color: '#ffdf99'}] //ffdd66
+                },
+                {
+                  featureType: 'road.highway',
+                  elementType: 'geometry.stroke',
+                  stylers: [{color: '#ffee9f'}]
+                },
+                {
+                  featureType: 'road.highway',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#595959'}]
+                },
+                {
+                  featureType: 'transit',
+                  elementType: 'geometry',
+                  stylers: [{color: '#cecece'}]
+                },
+                {
+                  featureType: 'transit.station',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#d59563'}]
+                },
+                {
+                  featureType: 'water',
+                  elementType: 'geometry',
+                  stylers: [{color: '#c1e5f9'}]
+                },
+                {
+                  featureType: 'water',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#fff'}]
+                },
+                {
+                  featureType: 'water',
+                  elementType: 'labels.text.stroke',
+                  stylers: [{color: '#000'}]
+                }
+              ]
+            });
+            
+            map.addListener('center_changed', function() {
+                window.setTimeout(function() {
+                  var latlng = {lat: parseFloat(map.center.lat()), lng: parseFloat(map.center.lng())};
+                  geocoder.geocode({'location': latlng}, function(results, status) {
+                      if (status === 'OK') {
+                        if (results[1]) {
+                          $('#text-address').val(results[1].formatted_address);
+                        } else {
+                          //alert('No results found');
+                        }
+                      } else {
+                        //alert('Geocoder failed due to: ' + status);
+                      }
+                    });
+                }, 10);  
+            });
+            
+            map.addListener('dragstart', function() {
+                    $('.pin-bar').css('width','40px')
+                                .css('margin-left','calc(50% - 20px)');
+                    $('.pin-bar h2').css('display','none');
+            });
+            
+            map.addListener('dragend', function() {
+                $('.pin-bar').css('width','100%')
+                            .css('margin-left','0');
+                setTimeout(function() {
+                    $('.pin-bar h2').css('display','inline');	
+                    }, 300);
+          		});	
+			 
+			 	
+			mapdir = new google.maps.Map(document.getElementById('mapdir'), {
+              center: {lat:-33.952254, lng: 18.47},
+              zoom: 10,
+              zoomControl: true,
+              gestureHandling: 'greedy',
+              mapTypeControl: false,
+              scaleControl: true,
+              streetViewControl: false,
+              rotateControl: true,
+              fullscreenControl: false,
+              styles: [
+                {elementType: 'geometry', stylers: [{color: '#f1f2f4'}]},
+                {elementType: 'labels.text.stroke', stylers: [{color: '#ffffff'}]},
+                {elementType: 'labels.text.fill', stylers: [{color: '#191919'}]},
+                {
+                  featureType: 'administrative.locality',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#d59563'}]
+                },
+                {
+                  featureType: 'poi',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#d59563'}]
+                },
+                {
+                  featureType: 'poi.park',
+                  elementType: 'geometry',
+                  stylers: [{color: '#cff6b7'}]
+                },
+                {
+                  featureType: 'poi.park',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#6b9a76'}]
+                },
+                {
+                  featureType: 'road',
+                  elementType: 'geometry',
+                  stylers: [{color: '#ffffff'}]
+                },
+                {
+                  featureType: 'road',
+                  elementType: 'geometry.stroke',
+                  stylers: [{color: '#ffffff'}]
+                },
+                {
+                  featureType: 'road',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#9ca5b3'}]
+                },
+                {
+                  featureType: 'road.highway',
+                  elementType: 'geometry',
+                  stylers: [{color: '#ffdf99'}] //ffdd66
+                },
+                {
+                  featureType: 'road.highway',
+                  elementType: 'geometry.stroke',
+                  stylers: [{color: '#ffee9f'}]
+                },
+                {
+                  featureType: 'road.highway',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#595959'}]
+                },
+                {
+                  featureType: 'transit',
+                  elementType: 'geometry',
+                  stylers: [{color: '#cecece'}]
+                },
+                {
+                  featureType: 'transit.station',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#d59563'}]
+                },
+                {
+                  featureType: 'water',
+                  elementType: 'geometry',
+                  stylers: [{color: '#c1e5f9'}]
+                },
+                {
+                  featureType: 'water',
+                  elementType: 'labels.text.fill',
+                  stylers: [{color: '#fff'}]
+                },
+                {
+                  featureType: 'water',
+                  elementType: 'labels.text.stroke',
+                  stylers: [{color: '#000'}]
+                }
+              ]
+            });
+			
+			 // Create a renderer for directions and bind it to the map.
+			directionsDisplay = new google.maps.DirectionsRenderer({map: mapdir});
+	
+			// Instantiate an info window to hold step text.
+			stepDisplay = new google.maps.InfoWindow;
+	
+			// Display the route between the initial start and end selections.
+			calculateAndDisplayRoute(directionsDisplay, directionsService, 
+				markerArray, stepDisplay, mapdir);
+			  // Listen to change events from the start and end lists.
+			  var onChangeHandler = function() {
+				calculateAndDisplayRoute(directionsDisplay, directionsService,
+				markerArray, stepDisplay, mapdir);
+			  };
+			}
+	  
+			function calculateAndDisplayRoute(directionsDisplay, directionsService,
+			markerArray, stepDisplay, map) {
+			  // First, remove any existing markers from the map.
+			  for (var i = 0; i < markerArray.length; i++) {
+				markerArray[i].setMap(null);
+			  }
+	  
+			  // Retrieve the start and end locations and create a DirectionsRequest using
+			  // WALKING directions.
+			  directionsService.route({
+				origin: 'Nkowankowa, Limpopo',
+				destination: 'Tzaneen, Limpopo',
+				travelMode: 'WALKING'
+			  }, function(response, status) {
+				// Route the directions and pass the response to a function to create
+				// markers for each step.
+				if (status === 'OK') {
+				  //alert('<b>' + response.routes[0].warnings + '</b>');
+				  directionsDisplay.setDirections(response);
+				  showSteps(response, markerArray, stepDisplay, mapdir);
+				} else {
+				  window.alert('Directions request failed due to ' + status);
+				}
+			  });
+			}
+	  
+			function showSteps(directionResult, markerArray, stepDisplay, map) {
+			  // For each step, place a marker, and add the text to the marker's infowindow.
+			  // Also attach the marker to an array so we can keep track of it and remove it
+			  // when calculating new routes.
+			  var myRoute = directionResult.routes[0].legs[0];
+			  for (var i = 0; i < myRoute.steps.length; i++) {
+				var marker = markerArray[i] = markerArray[i] || new google.maps.Marker;
+				marker.setMap(map);
+				marker.setPosition(myRoute.steps[i].start_location);
+				attachInstructionText(
+					stepDisplay, marker, myRoute.steps[i].instructions, map);
+			  }
+			}
+	  
+			function attachInstructionText(stepDisplay, marker, text, map) {
+			  google.maps.event.addListener(marker, 'click', function() {
+				// Open an info window when the marker is clicked on, containing the text
+				// of the step.
+				stepDisplay.setContent(text);
+				stepDisplay.open(map, marker);
+			  });
+          }	
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAL7RBjLHf8OrVoIYBvZi0r0YvDyn3mvHU&callback=initMap&libraries=places"
+     async defer></script>
+        	<div class="address-bar"> 
+            	<div class="pin-dot address"> </div>
+                <input name="address" type="text" id="text-address" />
+            </div>
+            <div class="pin-finder"> 
+            	<div class="pin-bar"> 
+                	<!--<div class="map-go"> > </div>-->
+                	<h2> SET JOB DISCOVERY LOCATION </h2>
+                    
+                </div>
+                <div class="pin-pin"> </div>
+                <!--<div class="pin-dot"> </div>-->
+            </div>	
+        </div>
+    </section>
+   <!-- END OF SECTION 2 -->  
+   
+   <!-- SECTION 3: Job description view --> 
+     <section class="screenC-main" >
+    	<div class="map-container dir">
+            <div id="mapdir"> </div>
+ 	
+        </div>
+        <div class="job-description">
+        	<div class="dscr-prof-pic"> </div>
+            <div class="dscr-text"> 
+            	<h1> Car wash </h1>
+                <p> John Smith </p>
+                <p> 0.5km away </p>
+                <p> I need my car washed </p>
+            </div>
+        </div>
+    </section>
+        	
+</body>
+</html>

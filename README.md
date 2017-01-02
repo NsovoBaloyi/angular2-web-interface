@@ -1,1 +1,1 @@
-# angular2-web-interface
+# react-web-interface
